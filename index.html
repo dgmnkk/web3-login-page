@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Web3 Login Page</title>
+</head>
+
+<body>
+    <div class="web3-login-page">
+        <h3 class="title">WEB3 Login Page</h3>
+        <div class="cta-section">
+            <button id="login">
+                <img class="metamask-logo" src="./metamask-logo.png" alt="MetaMask">
+                Login via MetaMask
+            </button>
+            <button id="logout">Logout</button>
+        </div>
+
+        <pre id="out"></pre>
+
+        <div class="author-footer">Site made by Humeniuk Diana in scope of Cryptonomy course</div>
+    </div>
+
+    <script>
+        const out = (text) => document.getElementById("out").innerText = text;
+
+        async function login() {
+            if (!window.ethereum) {
+                out("❌ MetaMask not found");
+                return;
+            }
+
+            try {
+                const accounts = await window.ethereum.request({
+                    method: "eth_requestAccounts"
+                });
+                const address = accounts[0];
+
+                const message = "Submit login to Web3 App";
+
+                const signature = await window.ethereum.request({
+                    method: "personal_sign",
+                    params: [message, address]
+                });
+
+                const recovered = await window.ethereum.request({
+                    method: "personal_ecRecover",
+                    params: [message, signature]
+                });
+
+                if (recovered.toLowerCase() === address.toLowerCase()) {
+                    localStorage.setItem("wallet", address);
+                    out("✅ Succes Login\nAddess: " + address);
+                } else {
+                    out("❌ Address was not confirmed by signature");
+                }
+
+            } catch (e) {
+                out("❌ Error: " + e.message);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("wallet");
+            out("You are logged out");
+        }
+
+        document.getElementById("login").onclick = login;
+        document.getElementById("logout").onclick = logout;
+
+        const saved = localStorage.getItem("wallet");
+        if (saved) {
+            out("✅ You are logged in\nAddress: " + saved);
+        }
+    </script>
+
+    <style>
+        .web3-login-page {
+            max-width: 400px;
+            height: 100%;
+            margin: 200px auto;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .cta-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #f6851b;
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+
+        #login {
+            background-color: #ffffff;
+            color: #f6851b;
+            border: 1px solid #f6851b;
+            border-radius: 8px;
+        }
+
+        .metamask-logo {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .title {
+            text-transform: uppercase;
+            color: #f6851b;
+            font-weight: 600;
+        }
+
+        .author-footer {
+            position: absolute;
+            bottom: 10px;
+            color: #888;
+        }
+    </style>
+</body>
+
+</html>
